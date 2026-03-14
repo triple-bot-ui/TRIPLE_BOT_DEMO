@@ -1,0 +1,11 @@
+pycache/
+*.pyc
+*.pyo
+*.pyd
+*.log
+.DS_Store
+.env
+*.sqlite3
+*.db
+output/
+reports/

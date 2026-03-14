@@ -1,0 +1,54 @@
+============================================
+TRIPLE BOT TEST VERIFICATION
+Version: V4.2
+============================================
+
+
+TEST CASE 1
+SAFE STRUCTURE
+
+Foundation: 1m x 1m
+Column Capacity: 300 kN
+Load: 180 kN
+Soil Capacity: 200 kN/m²
+
+Results:
+
+Status: SAFE
+Column Utilization: 0.60
+Soil Utilization: 0.90
+Column Margin: 120 kN
+Soil Margin: 20 kN/m²
+Governing Mode: SOIL
+
+Pre-BIM Result:
+Required Area: 0.9 m²
+Status: PASS
+
+
+TEST CASE 2
+STRUCTURE FAILURE
+
+Foundation: 1m x 1m
+Column Capacity: 250 kN
+Load: 260 kN
+Soil Capacity: 200 kN/m²
+
+Results:
+
+Status: FAIL
+Column Utilization: 1.04
+Soil Utilization: 1.30
+Column Margin: -10 kN
+Soil Margin: -60 kN/m²
+Governing Mode: SOIL
+
+Pre-BIM Result:
+Required Area: 1.3 m²
+Status: FAIL
+
+
+All calculations verified.
+
+
+END OF DOCUMENT

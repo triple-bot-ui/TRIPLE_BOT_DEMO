@@ -1,0 +1,44 @@
+TRIPLE BOT — MODULE DESCRIPTION
+
+This document describes the core modules of the Triple Bot Engineering System.
+
+master_engine_v3.py
+Central orchestration engine that connects all engineering modules.
+
+constraint_engine.py
+Validates structural constraints and safety boundaries.
+
+load_combination_engine.py
+Calculates total structural load based on storey count and load per storey.
+
+pre_bim_validation_engine.py
+Performs early structural feasibility validation before BIM design.
+
+scenario_engine.py
+Explores alternative load scenarios (LOW / BASE / HIGH).
+
+sensitivity_engine.py
+Analyzes how structural safety changes with soil capacity or load variations.
+
+design_solver_engine.py
+Determines engineering strategy adjustments when failure occurs.
+
+engineering_advice_engine.py
+Provides recommended engineering decision strategies.
+
+multi_storey_engine.py
+Handles structural calculations for multiple storeys.
+
+boq_engine.py
+Generates Bill of Quantities including concrete volume, excavation volume, and reinforcement estimates.
+
+construction_output_engine.py
+Generates construction recommendation output.
+
+triplebot_diagram_engine.py
+Generates structural conceptual diagrams.
+
+report_generator_engine.py
+Exports engineering results into PDF reports.
+
+Triple Bot Engineering Intelligence System

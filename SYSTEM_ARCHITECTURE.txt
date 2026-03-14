@@ -1,0 +1,41 @@
+TRIPLE BOT — SYSTEM ARCHITECTURE
+
+Triple Bot is a deterministic engineering validation system designed to assist early-stage structural decision making before detailed design and BIM modeling.
+
+System Flow
+
+Input Parameters
+→ Load Calculation
+→ Structural Constraint Validation
+→ Utilization Analysis
+→ Decision Engine
+→ Scenario Exploration
+→ Sensitivity Analysis
+→ BOQ Generation
+→ Diagram Generation
+→ Engineering Report Export
+
+Core Components
+	1.	Deterministic Validation Engine
+Performs structural safety checks using deterministic formulas.
+	2.	Engineering Decision Engine
+Recommends corrective strategies when constraints are violated.
+	3.	Scenario Exploration Engine
+Simulates alternative loading scenarios.
+	4.	Sensitivity Analysis Engine
+Evaluates safety margins across soil capacity ranges.
+	5.	Construction Output Engine
+Generates preliminary construction quantities.
+	6.	Engineering Report Generator
+Produces professional validation reports.
+
+System Principles
+	•	Deterministic calculations
+	•	Transparent engineering logic
+	•	Pre-construction validation focus
+	•	Decision-support for engineers
+
+Developer
+Neo – Bangkok
+
+Triple Bot Engineering Intelligence System
