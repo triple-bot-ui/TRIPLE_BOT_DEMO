@@ -1,5 +1,5 @@
 # ============================================
-# TRIPLE BOT V4
+# TRIPLE BOT V5
 # Engineering Intelligence Engine
 # ============================================
 
@@ -24,7 +24,7 @@ def generate_engineering_intelligence(structural_validation):
     elif utilization < 0.8:
         risk_level = "MODERATE"
 
-    elif utilization < 1.0:
+    elif utilization <= 1.0:
         risk_level = "HIGH"
 
     else:
@@ -39,8 +39,8 @@ def generate_engineering_intelligence(structural_validation):
     elif utilization < 0.8:
         reserve_comment = "Adequate structural reserve available."
 
-    elif utilization < 1.0:
-        reserve_comment = "Limited structural reserve remaining."
+    elif utilization <= 1.0:
+        reserve_comment = "Structural capacity fully utilized."
 
     else:
         reserve_comment = "Structural capacity exceeded."
@@ -66,8 +66,8 @@ def generate_engineering_intelligence(structural_validation):
     elif utilization < 0.8:
         recommendation = "STRUCTURE IS SAFE — Design is within normal engineering limits."
 
-    elif utilization < 1.0:
-        recommendation = "STRUCTURE NEAR LIMIT — Consider increasing foundation size."
+    elif utilization <= 1.0:
+        recommendation = "STRUCTURE AT CAPACITY — Design is at structural limit."
 
     else:
         recommendation = "STRUCTURE UNSAFE — Redesign required."

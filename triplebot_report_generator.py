@@ -1,166 +1,169 @@
-# ============================================
-# TRIPLE BOT V5
-# Engineering Report Generator
-# ============================================
-
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.pagesizes import A4
-from io import BytesIO
-from datetime import datetime
-
-from triplebot_diagram_engine import generate_conceptual_diagram
-
-SYSTEM_VERSION = "Triple Bot V5"
+from reportlab.lib.units import mm
+from reportlab.lib import colors
+import io
 
 
-def generate_engineering_report(result, intelligence, prebim, boq):
+def generate_engineering_report(result, intelligence, prebim, boq, decision):
 
-    buffer = BytesIO()
+    buffer = io.BytesIO()
 
     doc = SimpleDocTemplate(
         buffer,
-        pagesize=A4
+        pagesize=A4,
+        rightMargin=30,
+        leftMargin=30,
+        topMargin=30,
+        bottomMargin=30
     )
 
     styles = getSampleStyleSheet()
+
     elements = []
 
     # ============================================
-    # HEADER
+    # TITLE
     # ============================================
 
-    elements.append(
-        Paragraph(
-            "Triple Bot V5 – Structural Validation Report",
-            styles["Title"]
-        )
-    )
-
-    timestamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
+    elements.append(Paragraph("Triple Bot Engineering Report", styles['Title']))
+    elements.append(Spacer(1, 10))
 
     elements.append(
-        Paragraph(f"System Version: {SYSTEM_VERSION}", styles["Normal"])
-    )
-
-    elements.append(
-        Paragraph(f"Timestamp: {timestamp}", styles["Normal"])
+        Paragraph("Units: SI (kN, m, m², m³)", styles['Normal'])
     )
 
     elements.append(Spacer(1, 20))
 
     # ============================================
-    # VALIDATION RESULT
+    # STRUCTURAL VALIDATION RESULT (V5)
     # ============================================
 
     elements.append(
-        Paragraph("Structural Validation Result", styles["Heading2"])
+        Paragraph("Structural Validation Result (V5)", styles['Heading2'])
     )
 
-    elements.append(
-        Paragraph(f"Status: {result['status']}", styles["Normal"])
-    )
+    table_data = [
+        ["Parameter", "Value"],
+        ["Status", result["status"]],
+        ["Column Utilization", f"{result['column_utilization']:.3f}"],
+        ["Soil Utilization", f"{result['soil_utilization']:.3f}"],
+        ["Column Margin", f"{result['column_margin']:.2f} kN"],
+        ["Soil Margin", f"{result['soil_margin']:.2f} kN/m²"],
+        ["Governing Mode", result["governing_mode"]],
+    ]
 
-    elements.append(
-        Paragraph(
-            f"Column Utilization: {result['column_utilization']}",
-            styles["Normal"]
-        )
-    )
+    table = Table(table_data)
 
-    elements.append(
-        Paragraph(
-            f"Soil Utilization: {result['soil_utilization']}",
-            styles["Normal"]
-        )
-    )
+    table.setStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey)
+    ])
 
-    elements.append(
-        Paragraph(
-            f"Governing Mode: {result['governing_mode']}",
-            styles["Normal"]
-        )
-    )
-
-    elements.append(Spacer(1, 10))
+    elements.append(table)
+    elements.append(Spacer(1, 20))
 
     # ============================================
-    # PRE-BIM
+    # PRE-BIM VALIDATION
     # ============================================
 
     elements.append(
-        Paragraph("Pre-BIM Validation", styles["Heading2"])
+        Paragraph("Pre-BIM Validation (V5)", styles['Heading2'])
     )
 
-    elements.append(
-        Paragraph(
-            f"Total Load: {prebim['total_load']} kN",
-            styles["Normal"]
-        )
-    )
+    table_data = [
+        ["Parameter", "Value"],
+        ["Total Load", f"{prebim['total_load']} kN"],
+        ["Soil Pressure", f"{prebim['soil_pressure']} kN/m²"],
+        ["Foundation Area", f"{prebim['foundation_area']} m²"],
+        ["Required Area", f"{prebim['required_area']} m²"],
+        ["Utilization", prebim["utilization"]],
+        ["Status", prebim["status"]],
+    ]
 
-    elements.append(
-        Paragraph(
-            f"Soil Pressure: {prebim['soil_pressure']} kN/m²",
-            styles["Normal"]
-        )
-    )
+    table = Table(table_data)
 
-    elements.append(
-        Paragraph(
-            f"Foundation Area: {prebim['foundation_area']} m²",
-            styles["Normal"]
-        )
-    )
+    table.setStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey)
+    ])
 
-    elements.append(
-        Paragraph(
-            f"Required Area: {prebim['required_area']} m²",
-            styles["Normal"]
-        )
-    )
-
-    elements.append(Spacer(1, 10))
+    elements.append(table)
+    elements.append(Spacer(1, 20))
 
     # ============================================
-    # ENGINEERING RECOMMENDATION
+    # ENGINEERING RECOMMENDATION (V5)
     # ============================================
 
     elements.append(
-        Paragraph("Engineering Recommendation", styles["Heading2"])
+        Paragraph("Engineering Recommendation (V5)", styles['Heading2'])
     )
 
     elements.append(
-        Paragraph(
-            intelligence["recommendation"],
-            styles["Normal"]
-        )
+        Paragraph(intelligence["recommendation"], styles['Normal'])
     )
 
     elements.append(Spacer(1, 20))
 
     # ============================================
-    # STRUCTURAL DIAGRAM
+    # ENGINEERING DECISION (V8)
     # ============================================
 
     elements.append(
-        Paragraph("Structural Conceptual Diagram", styles["Heading2"])
+        Paragraph("Engineering Decision (V8)", styles['Heading2'])
     )
 
-    foundation_area = boq["foundation_area"]
-    foundation_size = foundation_area ** 0.5
+    # ⭐ FIX: ถ้าโครงสร้าง SAFE → ไม่ต้องมี recommendation
+    if result.get("status") == "SAFE":
 
-    diagram = generate_conceptual_diagram(
-        foundation_size,
-        foundation_size,
-        prebim["total_load"],
-        prebim["soil_pressure"]
-    )
+        table_data = [
+            ["Parameter", "Value"],
+            ["Recommended Action", "None"],
+        ]
 
-    img_buffer = diagram
+    elif decision.get("best_option"):
 
-    elements.append(Image(img_buffer, width=400, height=250))
+        best = decision["best_option"]
 
+        option_type = best.get("option_type")
+
+        load_reduction = "N/A"
+        foundation_size = "N/A"
+        column_upgrade = "N/A"
+
+        if option_type == "LOAD_REDUCTION":
+            load_reduction = f"{best.get('load_reduction') * 100:.1f} %"
+
+        if option_type == "FOUNDATION_INCREASE":
+            foundation_size = best.get("foundation_size")
+
+        if option_type == "COLUMN_UPGRADE":
+            column_upgrade = best.get("column_capacity")
+
+        table_data = [
+            ["Parameter", "Value"],
+            ["Recommended Action", option_type],
+            ["Load Reduction", load_reduction],
+            ["New Foundation Size", foundation_size],
+            ["Upgraded Column Capacity", column_upgrade],
+        ]
+
+    else:
+
+        table_data = [
+            ["Parameter", "Value"],
+            ["Recommended Action", "None"],
+        ]
+
+    table = Table(table_data)
+
+    table.setStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey)
+    ])
+
+    elements.append(table)
     elements.append(Spacer(1, 20))
 
     # ============================================
@@ -168,83 +171,40 @@ def generate_engineering_report(result, intelligence, prebim, boq):
     # ============================================
 
     elements.append(
-        Paragraph("Bill of Quantities (BOQ)", styles["Heading2"])
+        Paragraph("Bill of Quantities (V5)", styles['Heading2'])
     )
 
-    elements.append(
-        Paragraph(
-            f"Foundation Area: {boq['foundation_area']} m²",
-            styles["Normal"]
-        )
-    )
+    table_data = [
+        ["Parameter", "Value"],
+        ["Foundation Area", f"{boq['foundation_area']} m²"],
+        ["Foundation Depth", f"{boq['foundation_depth']} m"],
+        ["Concrete Volume", f"{boq['concrete_volume_m3']} m³"],
+        ["Excavation Volume", f"{boq['excavation_volume_m3']} m³"],
+        ["Reinforcement Estimate", f"{boq['reinforcement_estimate']} kg"],
+    ]
 
-    elements.append(
-        Paragraph(
-            f"Foundation Depth: {boq['foundation_depth']} m",
-            styles["Normal"]
-        )
-    )
+    table = Table(table_data)
 
-    elements.append(
-        Paragraph(
-            f"Concrete Volume: {boq['concrete_volume_m3']} m³",
-            styles["Normal"]
-        )
-    )
+    table.setStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey)
+    ])
 
-    elements.append(
-        Paragraph(
-            f"Excavation Volume: {boq['excavation_volume_m3']} m³",
-            styles["Normal"]
-        )
-    )
-
-    elements.append(
-        Paragraph(
-            f"Reinforcement Estimate: {boq['reinforcement_kg']} kg",
-            styles["Normal"]
-        )
-    )
-
+    elements.append(table)
     elements.append(Spacer(1, 20))
 
     # ============================================
-    # ENGINEERING ASSUMPTIONS
+    # DISCLAIMER
     # ============================================
 
     elements.append(
-        Paragraph("Engineering Assumptions", styles["Heading2"])
-    )
-
-    elements.append(
         Paragraph(
-            "Concrete Volume = Foundation Area × Foundation Depth",
-            styles["Normal"]
+            "Note: This report provides deterministic structural validation "
+            "based on the provided input parameters. Final engineering approval "
+            "must be performed by a licensed structural engineer.",
+            styles['Italic']
         )
     )
-
-    elements.append(
-        Paragraph(
-            "Reinforcement Estimate = Concrete Volume × 100 kg/m³",
-            styles["Normal"]
-        )
-    )
-
-    elements.append(
-        Paragraph(
-            "Excavation Volume = (Width + 0.2) × (Length + 0.2) × (Depth + 0.1)",
-            styles["Normal"]
-        )
-    )
-
-    elements.append(
-        Paragraph(
-            "Required Foundation Area = Total Load / Soil Capacity",
-            styles["Normal"]
-        )
-    )
-
-    elements.append(Spacer(1, 20))
 
     doc.build(elements)
 

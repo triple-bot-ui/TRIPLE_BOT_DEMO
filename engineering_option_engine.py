@@ -4,13 +4,10 @@
 # Deterministic Engineering Option Exploration
 # ============================================
 
-# SEARCH PARAMETERS
-
 MIN_FOUNDATION_SIZE = 1.0
 MAX_FOUNDATION_SIZE = 10.0
 FOUNDATION_STEP = 0.5
 
-# Overdesign guardrail
 MIN_SOIL_UTILIZATION = 0.10
 
 COLUMN_OPTIONS = [
@@ -45,81 +42,83 @@ def generate_engineering_options(engineering_results, input_data):
 
     total_load = load_per_storey * storeys
 
-    # ----------------------------------------
-    # OPTION TYPE A
-    # FOUNDATION SIZE INCREASE
-    # ----------------------------------------
+    column_utilization = engineering_results["column_utilization"]
+    soil_utilization = engineering_results["soil_utilization"]
 
-    size = MIN_FOUNDATION_SIZE
+    foundation_area = foundation_width * foundation_length
 
-    while size <= MAX_FOUNDATION_SIZE:
+    # ============================================
+    # COLUMN FAILURE OPTION
+    # ============================================
 
-        foundation_area = size * size
+    if column_utilization > 1.0:
 
-        soil_pressure = total_load / foundation_area
+        for capacity in COLUMN_OPTIONS:
 
-        soil_utilization = soil_pressure / soil_capacity
+            new_util = total_load / capacity
 
-        if (
-            soil_utilization <= 1.0 and
-            soil_utilization >= MIN_SOIL_UTILIZATION
-        ):
+            if new_util <= 1.0:
 
-            options.append({
-                "option_type": "FOUNDATION_INCREASE",
-                "foundation_size": round(size, 2),
-                "soil_utilization": round(soil_utilization, 3),
-                "status": "OPTIMAL"
-            })
+                options.append({
+                    "option_type": "COLUMN_UPGRADE",
+                    "column_capacity": capacity,
+                    "column_utilization": round(new_util, 3),
+                    "status": "REQUIRED"
+                })
 
-        size += FOUNDATION_STEP
+    # ============================================
+    # SOIL FAILURE OPTION
+    # ============================================
 
-    # ----------------------------------------
-    # OPTION TYPE B
-    # COLUMN CAPACITY UPGRADE
-    # ----------------------------------------
+    if soil_utilization > 1.0:
 
-    for capacity in COLUMN_OPTIONS:
+        size = MIN_FOUNDATION_SIZE
 
-        column_utilization = total_load / capacity
+        while size <= MAX_FOUNDATION_SIZE:
 
-        if column_utilization <= 1.0:
+            area = size * size
 
-            options.append({
-                "option_type": "COLUMN_UPGRADE",
-                "column_capacity": capacity,
-                "column_utilization": round(column_utilization, 3),
-                "status": "OPTIMAL"
-            })
+            soil_pressure = total_load / area
 
-    # ----------------------------------------
-    # OPTION TYPE C
-    # LOAD REDUCTION
-    # ----------------------------------------
+            new_util = soil_pressure / soil_capacity
 
-    for reduction in LOAD_REDUCTION_OPTIONS:
+            if new_util <= 1.0 and new_util >= MIN_SOIL_UTILIZATION:
 
-        if reduction == 0:
-            continue
+                options.append({
+                    "option_type": "FOUNDATION_INCREASE",
+                    "foundation_size": round(size, 2),
+                    "soil_utilization": round(new_util, 3),
+                    "status": "REQUIRED"
+                })
 
-        reduced_load = total_load * (1 - reduction)
+            size += FOUNDATION_STEP
 
-        column_utilization = reduced_load / column_capacity
+    # ============================================
+    # LOAD REDUCTION OPTIONS (ONLY IF SAFE)
+    # ============================================
 
-        foundation_area = foundation_width * foundation_length
+    if column_utilization <= 1.0 and soil_utilization <= 1.0:
 
-        soil_pressure = reduced_load / foundation_area
+        for reduction in LOAD_REDUCTION_OPTIONS:
 
-        soil_utilization = soil_pressure / soil_capacity
+            if reduction == 0:
+                continue
 
-        if column_utilization <= 1.0 and soil_utilization <= 1.0:
+            reduced_load = total_load * (1 - reduction)
 
-            options.append({
-                "option_type": "LOAD_REDUCTION",
-                "load_reduction": reduction,
-                "column_utilization": round(column_utilization, 3),
-                "soil_utilization": round(soil_utilization, 3),
-                "status": "ACCEPTABLE"
-            })
+            new_column_util = reduced_load / column_capacity
+
+            soil_pressure = reduced_load / foundation_area
+            new_soil_util = soil_pressure / soil_capacity
+
+            if new_column_util <= 1.0 and new_soil_util <= 1.0:
+
+                options.append({
+                    "option_type": "LOAD_REDUCTION",
+                    "load_reduction": reduction,
+                    "column_utilization": round(new_column_util, 3),
+                    "soil_utilization": round(new_soil_util, 3),
+                    "status": "ACCEPTABLE"
+                })
 
     return options

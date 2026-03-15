@@ -4,7 +4,7 @@
 # Deterministic Engineering Decision Ranking
 # ============================================
 
-from engineering_constants import (
+from engineering_constants_v8 import (
     FOUNDATION_COST_WEIGHT,
     COLUMN_COST_WEIGHT,
     LOAD_REDUCTION_PENALTY,
