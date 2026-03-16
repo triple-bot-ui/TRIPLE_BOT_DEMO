@@ -252,7 +252,7 @@ if run:
     soil_pressure = result["soil_pressure"]
 
     column_sf = column_capacity / total_load
-    soil_sf = soil_capacity / soil_pressure
+    soil_sf = soil_capacity / soil_pressure if soil_pressure > 0 else float('inf')
 
     def format_sf(value):
         if value >= 0.01:
