@@ -6,6 +6,10 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime
+from auth import login_page
+
+if not login_page():
+    st.stop()
 
 from master_engine_v3 import run_structural_validation
 from scenario_engine import run_scenario_exploration
@@ -100,7 +104,6 @@ if run:
 
     total_load = round(load_per_storey * storeys, 3)
 
-    # BUG FIX A: warn early if foundation is clearly undersized
     foundation_area_check = foundation_width * foundation_length
     required_area_check = total_load / soil_capacity
     if foundation_area_check < required_area_check:
@@ -165,8 +168,6 @@ if run:
 
     # ============================================
     # ENGINEERING SUMMARY
-    # BUG FIX B: removed duplicate "Recommended Action" block
-    # (it duplicates the Engineering Decision section below)
     # ============================================
 
     st.header("Engineering Summary")
@@ -176,24 +177,12 @@ if run:
 
     col_sum1, col_sum2, col_sum3 = st.columns(3)
 
-    col_sum1.metric(
-        "Critical Utilization",
-        f"{critical_utilization:.3f}"
-    )
-
-    col_sum2.metric(
-        "Design Reserve (%)",
-        f"{design_reserve:.1f}"
-    )
-
-    col_sum3.metric(
-        "Governing Mode",
-        governing_mode
-    )
+    col_sum1.metric("Critical Utilization", f"{critical_utilization:.3f}")
+    col_sum2.metric("Design Reserve (%)", f"{design_reserve:.1f}")
+    col_sum3.metric("Governing Mode", governing_mode)
 
     # ============================================
     # STRUCTURAL DIAGRAM
-    # BUG FIX C: guard against diagram returning None
     # ============================================
 
     st.subheader("Structural Conceptual Diagram")
@@ -214,10 +203,6 @@ if run:
 
     # ============================================
     # UTILIZATION DISPLAY
-    # BUG FIX D: clamp to [0.0, 1.0] — negative values crash st.progress()
-    # BUG FIX (Issue 3): show overflow label so util=1.2 and util=1000
-    # are visually distinguishable (bar is always full when >1, but
-    # label shows actual severity)
     # ============================================
 
     st.subheader("Utilization Overview")
@@ -244,9 +229,6 @@ if run:
 
     # ============================================
     # SAFETY FACTORS
-    # BUG FIX E: reuse result["soil_pressure"] instead of recalculating
-    # BUG FIX (Issue 2): use dynamic decimal places so values like
-    # 0.001 never round-display as 0.00
     # ============================================
 
     st.subheader("Safety Factors")
@@ -331,7 +313,6 @@ if run:
 
     # ============================================
     # CONSTRUCTION RECOMMENDATION
-    # BUG FIX G: use st.error() for UNSAFE — was st.success() (green box) which is misleading
     # ============================================
 
     st.header("Construction Recommendation")
@@ -347,7 +328,6 @@ if run:
 
     # ============================================
     # ENGINEERING DECISION
-    # BUG FIX H: guard against load_reduction being None before * 100
     # ============================================
 
     st.header("Engineering Decision")
@@ -393,7 +373,6 @@ if run:
 
     # ============================================
     # BOQ SECTION
-    # BUG FIX I: use recommended foundation size for BOQ when status is FAIL
     # ============================================
 
     st.header("Bill of Quantities")
