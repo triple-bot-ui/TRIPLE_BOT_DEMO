@@ -46,11 +46,11 @@ st.info("🔒 Deterministic Engine · No generative AI · All results reproducib
 # ============================================
 
 foundation_width = st.number_input(
-    "Foundation Width (m)", min_value=0.01, value=1.0, step=0.1, format="%.3f"
+    "Foundation Width (m)", min_value=0.001, value=1.0, step=0.001, format="%.3f"
 )
 
 foundation_length = st.number_input(
-    "Foundation Length (m)", min_value=0.01, value=1.0, step=0.1, format="%.3f"
+    "Foundation Length (m)", min_value=0.001, value=1.0, step=0.001, format="%.3f"
 )
 
 column_capacity = st.number_input(
