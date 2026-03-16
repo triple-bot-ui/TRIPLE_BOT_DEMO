@@ -44,11 +44,11 @@ st.caption(f"Timestamp: {timestamp}")
 # ============================================
 
 foundation_width = st.number_input(
-    "Foundation Width (m)", value=1.0, min_value=0.0
+    "Foundation Width (m)", min_value=0.01, value=1.0, step=0.1, format="%.3f"
 )
 
 foundation_length = st.number_input(
-    "Foundation Length (m)", value=1.0, min_value=0.0
+    "Foundation Length (m)", min_value=0.01, value=1.0, step=0.1, format="%.3f"
 )
 
 column_capacity = st.number_input(
@@ -56,7 +56,7 @@ column_capacity = st.number_input(
 )
 
 load_per_storey = st.number_input(
-    "Load per Storey (kN)", value=120.0, min_value=0.0
+    "Load per Storey (kN)", value=300.0, min_value=0.0
 )
 
 st.caption(
