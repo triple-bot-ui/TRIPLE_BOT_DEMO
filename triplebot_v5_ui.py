@@ -39,6 +39,8 @@ timestamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
 st.caption(f"System Version: {SYSTEM_VERSION}")
 st.caption(f"Timestamp: {timestamp}")
 
+st.info("🔒 Deterministic Engine · No generative AI · All results reproducible")
+
 # ============================================
 # INPUT SECTION
 # ============================================
