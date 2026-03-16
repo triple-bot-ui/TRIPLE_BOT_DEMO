@@ -19,7 +19,7 @@ def run_scenario_exploration(
     # Base Load
     # ============================================
 
-    base_total_load = load_per_storey * number_of_storeys
+    base_total_load = round(load_per_storey * number_of_storeys, 3)
 
     foundation_area = foundation_width * foundation_length
 

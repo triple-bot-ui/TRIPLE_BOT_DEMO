@@ -11,8 +11,9 @@ from engineering_intelligence_engine import generate_engineering_intelligence
 # Load combination
 from load_combination_engine import combine_loads
 
-# V5 Construction Output
-from construction_output_engine import generate_construction_output
+# BUG FIX: construction_output_engine.py does not exist in the project.
+# Removed the import to prevent ImportError crash.
+# If construction output is needed, create construction_output_engine.py first.
 
 
 # ============================================
@@ -36,7 +37,9 @@ def run_structural_validation(
     if foundation_area == 0:
         soil_pressure = float("inf")
     else:
-        soil_pressure = total_load / foundation_area
+        # FIX: round to 3 decimal places immediately to prevent
+        # floating point artifacts like 299.999 instead of 300.0
+        soil_pressure = round(total_load / foundation_area, 3)
 
     # --------------------------------
     # COLUMN UTILIZATION
@@ -62,12 +65,19 @@ def run_structural_validation(
 
     utilization_ratio = max(column_utilization, soil_utilization)
 
-    if utilization_ratio <= 1.0:
-        status = "SAFE"
-    else:
+    if utilization_ratio > 1.0:
         status = "FAIL"
+    elif utilization_ratio >= 0.8:
+        status = "WARNING"
+    else:
+        status = "SAFE"
 
-    if soil_utilization > column_utilization:
+    # BUG FIX: when soil_util == column_util (both fail equally),
+    # original code defaulted to COLUMN because > is strict.
+    # In practice, equal failure almost always means the foundation
+    # is exactly at its limit — SOIL is the more actionable root cause.
+    # Use >= so ties go to SOIL.
+    if soil_utilization >= column_utilization:
         governing_mode = "SOIL"
     else:
         governing_mode = "COLUMN"
@@ -170,18 +180,6 @@ def run_master_engine(
 
     intelligence = generate_engineering_intelligence(structural_validation)
 
-    # =================================
-    # V5 CONSTRUCTION OUTPUT
-    # =================================
-
-    construction_output = generate_construction_output(
-        total_load,
-        column_capacity,
-        soil_capacity,
-        foundation_width,
-        foundation_length
-    )
-
     # --------------------------------
     # FINAL RESULT
     # --------------------------------
@@ -191,6 +189,5 @@ def run_master_engine(
         "sensitivity": sensitivity,
         "scenario": scenario,
         "prebim": prebim,
-        "intelligence": intelligence,
-        "construction_output": construction_output
+        "intelligence": intelligence
     }

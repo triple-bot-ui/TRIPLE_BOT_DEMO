@@ -3,7 +3,9 @@
 # V6 Engineering Expansion Layer
 # ============================================
 
-from engineering_constants import LOAD_FACTOR
+# BUG FIX: engineering_constants.py does not exist in the project.
+# LOAD_FACTOR is now defined inline to prevent ImportError crash.
+LOAD_FACTOR = 1.4
 
 
 def generate_load_cases(load_per_storey, number_of_storeys):

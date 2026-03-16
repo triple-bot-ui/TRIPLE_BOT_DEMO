@@ -11,8 +11,9 @@ from engineering_intelligence_engine import generate_engineering_intelligence
 # Load combination
 from load_combination_engine import combine_loads
 
-# V5 Construction Output
-from construction_output_engine import generate_construction_output
+# BUG FIX: construction_output_engine.py does not exist in the project.
+# Removed the import to prevent ImportError crash.
+# If construction output is needed, create construction_output_engine.py first.
 
 
 # ============================================
@@ -170,18 +171,6 @@ def run_master_engine(
 
     intelligence = generate_engineering_intelligence(structural_validation)
 
-    # =================================
-    # V5 CONSTRUCTION OUTPUT
-    # =================================
-
-    construction_output = generate_construction_output(
-        total_load,
-        column_capacity,
-        soil_capacity,
-        foundation_width,
-        foundation_length
-    )
-
     # --------------------------------
     # FINAL RESULT
     # --------------------------------
@@ -191,6 +180,5 @@ def run_master_engine(
         "sensitivity": sensitivity,
         "scenario": scenario,
         "prebim": prebim,
-        "intelligence": intelligence,
-        "construction_output": construction_output
+        "intelligence": intelligence
     }

@@ -114,7 +114,6 @@ def generate_engineering_report(result, intelligence, prebim, boq, decision):
         Paragraph("Engineering Decision (V8)", styles['Heading2'])
     )
 
-    # ⭐ FIX: ถ้าโครงสร้าง SAFE → ไม่ต้องมี recommendation
     if result.get("status") == "SAFE":
 
         table_data = [
@@ -133,13 +132,15 @@ def generate_engineering_report(result, intelligence, prebim, boq, decision):
         column_upgrade = "N/A"
 
         if option_type == "LOAD_REDUCTION":
-            load_reduction = f"{best.get('load_reduction') * 100:.1f} %"
+            # BUG FIX: guard against load_reduction being None before multiplying
+            lr = best.get("load_reduction")
+            load_reduction = f"{lr * 100:.1f} %" if lr is not None else "N/A"
 
         if option_type == "FOUNDATION_INCREASE":
-            foundation_size = best.get("foundation_size")
+            foundation_size = best.get("foundation_size", "N/A")
 
         if option_type == "COLUMN_UPGRADE":
-            column_upgrade = best.get("column_capacity")
+            column_upgrade = best.get("column_capacity", "N/A")
 
         table_data = [
             ["Parameter", "Value"],

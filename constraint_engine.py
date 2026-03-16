@@ -14,9 +14,21 @@ def run_constraint_check(
 
     foundation_area = foundation_width * foundation_length
 
-    column_utilization = total_load / column_capacity
-    soil_pressure = total_load / foundation_area
-    soil_utilization = soil_pressure / soil_capacity
+    # BUG FIX: guard division by zero before calculating utilization
+    if column_capacity == 0:
+        column_utilization = float("inf")
+    else:
+        column_utilization = total_load / column_capacity
+
+    if foundation_area == 0:
+        soil_pressure = float("inf")
+        soil_utilization = float("inf")
+    else:
+        soil_pressure = total_load / foundation_area
+        if soil_capacity == 0:
+            soil_utilization = float("inf")
+        else:
+            soil_utilization = soil_pressure / soil_capacity
 
     constraints = []
 
@@ -32,7 +44,6 @@ def run_constraint_check(
             "message": "Column utilization exceeds recommended engineering limit (0.9)."
         })
 
-
     # -------------------------------
     # Constraint 2
     # Soil Utilization Limit
@@ -44,7 +55,6 @@ def run_constraint_check(
             "status": "WARNING",
             "message": "Soil utilization exceeds allowable bearing capacity."
         })
-
 
     # -------------------------------
     # Constraint 3
@@ -59,7 +69,6 @@ def run_constraint_check(
             "status": "WARNING",
             "message": "Foundation area smaller than recommended minimum."
         })
-
 
     # -------------------------------
     # Governing Constraint Detection
@@ -78,7 +87,6 @@ def run_constraint_check(
             "status": "CRITICAL",
             "message": "Column capacity governs structural failure."
         })
-
 
     # -------------------------------
     # Final Constraint Status

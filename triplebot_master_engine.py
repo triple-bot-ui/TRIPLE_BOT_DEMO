@@ -48,24 +48,31 @@ def run_triplebot_analysis(
 
     # ============================================
     # SENSITIVITY ANALYSIS
+    # BUG FIX: was passing foundation_area instead of
+    # storeys, foundation_width, foundation_length
     # ============================================
 
     sensitivity_analysis = run_sensitivity_analysis(
         load_per_storey,
-        foundation_area,
-        soil_capacity,
-        column_capacity
+        storeys,           # was: foundation_area (WRONG)
+        foundation_width,  # was: soil_capacity (WRONG)
+        foundation_length, # was: column_capacity (WRONG)
+        column_capacity,
+        soil_capacity
     )
 
     # ============================================
     # SCENARIO EXPLORATION
+    # BUG FIX: same wrong-argument pattern as sensitivity
     # ============================================
 
     scenario_exploration = run_scenario_exploration(
         load_per_storey,
-        foundation_area,
-        soil_capacity,
-        column_capacity
+        storeys,           # was: foundation_area (WRONG)
+        foundation_width,  # was: soil_capacity (WRONG)
+        foundation_length, # was: column_capacity (WRONG)
+        column_capacity,
+        soil_capacity
     )
 
     # ============================================

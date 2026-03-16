@@ -4,12 +4,12 @@
 # Deterministic Engineering Decision Ranking
 # ============================================
 
-from engineering_constants_v8 import (
-    FOUNDATION_COST_WEIGHT,
-    COLUMN_COST_WEIGHT,
-    LOAD_REDUCTION_PENALTY,
-    TARGET_UTILIZATION
-)
+# BUG FIX: engineering_constants_v8.py does not exist in the project.
+# Constants are now defined inline to prevent ImportError crash.
+FOUNDATION_COST_WEIGHT = 1.0
+COLUMN_COST_WEIGHT = 1.0
+LOAD_REDUCTION_PENALTY = 1.0
+TARGET_UTILIZATION = 0.8
 
 
 def calculate_option_score(option):

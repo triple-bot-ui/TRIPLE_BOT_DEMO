@@ -3,36 +3,27 @@
 # Deterministic engineering recommendation layer
 
 
-def prioritize_options_by_governing_mode(options, governing_mode):
+def filter_options_by_governing_mode(options, governing_mode):
+    """
+    BUG FIX: original code used prioritize (reorder) which still allowed
+    secondary options to win if no primary options existed.
+    Now uses a hard filter: only return options matching governing mode.
+    If no matching options exist, fall back to all options.
+    """
 
     if not options:
         return []
 
-    priority = []
-    secondary = []
+    if governing_mode == "COLUMN":
+        primary = [o for o in options if o.get("option_type") == "COLUMN_UPGRADE"]
+    elif governing_mode == "SOIL":
+        primary = [o for o in options if o.get("option_type") == "FOUNDATION_INCREASE"]
+    else:
+        primary = []
 
-    for opt in options:
-
-        option_type = opt.get("option_type")
-
-        if governing_mode == "COLUMN":
-
-            if option_type == "COLUMN_UPGRADE":
-                priority.append(opt)
-            else:
-                secondary.append(opt)
-
-        elif governing_mode == "SOIL":
-
-            if option_type == "FOUNDATION_INCREASE":
-                priority.append(opt)
-            else:
-                secondary.append(opt)
-
-        else:
-            secondary.append(opt)
-
-    return priority + secondary
+    # Hard filter: use governing-mode options only
+    # Fall back to full list only if no matching options found
+    return primary if primary else options
 
 
 def generate_engineering_decision(options, engineering_results=None):
@@ -51,12 +42,13 @@ def generate_engineering_decision(options, engineering_results=None):
     if engineering_results:
         governing_mode = engineering_results.get("governing_mode")
 
-    ranked_options = prioritize_options_by_governing_mode(
-        options,
-        governing_mode
-    )
+    # BUG FIX: filter by governing mode first (hard filter),
+    # then pick the first (lowest score / best) from that filtered set.
+    # Previously: prioritize was just a reorder, COLUMN could still win
+    # when FOUNDATION options had higher scores.
+    filtered_options = filter_options_by_governing_mode(options, governing_mode)
 
-    best_option = ranked_options[0]
+    best_option = filtered_options[0]
 
     decision = {
         "best_option": best_option,

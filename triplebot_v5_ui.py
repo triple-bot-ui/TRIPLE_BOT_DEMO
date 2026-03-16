@@ -96,7 +96,19 @@ if run:
         st.error("Soil capacity must be greater than zero.")
         st.stop()
 
-    total_load = load_per_storey * storeys
+    total_load = round(load_per_storey * storeys, 3)
+
+    # BUG FIX A: warn early if foundation is clearly undersized
+    foundation_area_check = foundation_width * foundation_length
+    required_area_check = total_load / soil_capacity
+    if foundation_area_check < required_area_check:
+        import math
+        min_side = math.ceil(math.sqrt(required_area_check) * 100) / 100
+        st.warning(
+            f"⚠️ Foundation area ({foundation_area_check:.3f} m²) is smaller than "
+            f"required area ({required_area_check:.3f} m²). "
+            f"Validation will FAIL. Minimum recommended size: {min_side} × {min_side} m."
+        )
 
     st.info(
         "Model scope: single column supported by a spread footing under axial load."
@@ -127,6 +139,8 @@ if run:
 
     if status == "SAFE":
         st.success("Status: SAFE")
+    elif status == "WARNING":
+        st.warning("Status: WARNING — Design is approaching structural limit. Review recommended.")
     else:
         st.error("Status: FAIL")
 
@@ -149,6 +163,8 @@ if run:
 
     # ============================================
     # ENGINEERING SUMMARY
+    # BUG FIX B: removed duplicate "Recommended Action" block
+    # (it duplicates the Engineering Decision section below)
     # ============================================
 
     st.header("Engineering Summary")
@@ -173,62 +189,46 @@ if run:
         governing_mode
     )
 
-    st.markdown("**Recommended Action**")
-
-    if status == "SAFE":
-        st.write("No engineering action required.")
-
-    else:
-
-        if decision.get("best_option"):
-
-            option = decision["best_option"]
-            option_type = option.get("option_type")
-
-            if option_type == "FOUNDATION_INCREASE":
-                size = option.get("foundation_size")
-                st.write(f"Increase foundation size to {size} m")
-
-            elif option_type == "COLUMN_UPGRADE":
-                capacity = option.get("column_capacity")
-                st.write(f"Upgrade column capacity to {capacity} kN")
-
-            elif option_type == "LOAD_REDUCTION":
-                reduction = option.get("load_reduction") * 100
-                st.write(f"Reduce structural load by {reduction:.1f}%")
-
-            else:
-                st.write("Engineering optimization available.")
-
-        else:
-            st.write("No optimization required.")
-
     # ============================================
     # STRUCTURAL DIAGRAM
+    # BUG FIX C: guard against diagram returning None
     # ============================================
 
     st.subheader("Structural Conceptual Diagram")
 
-    diagram = generate_conceptual_diagram(
-        foundation_width,
-        foundation_length,
-        total_load,
-        result["soil_pressure"]
-    )
-
-    st.image(diagram)
+    try:
+        diagram = generate_conceptual_diagram(
+            foundation_width,
+            foundation_length,
+            total_load,
+            result["soil_pressure"]
+        )
+        if diagram is not None:
+            st.image(diagram)
+        else:
+            st.warning("Diagram could not be generated.")
+    except Exception as e:
+        st.warning(f"Diagram generation failed: {e}")
 
     # ============================================
     # UTILIZATION DISPLAY
+    # BUG FIX D: clamp to [0.0, 1.0] — negative values crash st.progress()
+    # BUG FIX (Issue 3): show overflow label so util=1.2 and util=1000
+    # are visually distinguishable (bar is always full when >1, but
+    # label shows actual severity)
     # ============================================
 
     st.subheader("Utilization Overview")
 
     st.write("Column Utilization")
-    st.progress(min(column_util, 1.0))
+    st.progress(max(0.0, min(column_util, 1.0)))
+    if column_util > 1.0:
+        st.caption(f"⚠️ Overloaded — {column_util:.1f}× capacity ({column_util*100:.0f}%)")
 
     st.write("Soil Utilization")
-    st.progress(min(soil_util, 1.0))
+    st.progress(max(0.0, min(soil_util, 1.0)))
+    if soil_util > 1.0:
+        st.caption(f"⚠️ Overloaded — {soil_util:.1f}× capacity ({soil_util*100:.0f}%)")
 
     col1, col2 = st.columns(2)
 
@@ -242,20 +242,30 @@ if run:
 
     # ============================================
     # SAFETY FACTORS
+    # BUG FIX E: reuse result["soil_pressure"] instead of recalculating
+    # BUG FIX (Issue 2): use dynamic decimal places so values like
+    # 0.001 never round-display as 0.00
     # ============================================
 
     st.subheader("Safety Factors")
 
-    foundation_area = foundation_width * foundation_length
-    soil_pressure = total_load / foundation_area
+    soil_pressure = result["soil_pressure"]
 
     column_sf = column_capacity / total_load
     soil_sf = soil_capacity / soil_pressure
 
+    def format_sf(value):
+        if value >= 0.01:
+            return f"{value:.4f}"
+        elif value >= 0.0001:
+            return f"{value:.6f}"
+        else:
+            return f"{value:.2e}"
+
     col3, col4 = st.columns(2)
 
-    col3.metric("Column Safety Factor", f"{column_sf:.2f}")
-    col4.metric("Soil Safety Factor", f"{soil_sf:.2f}")
+    col3.metric("Column Safety Factor", format_sf(column_sf))
+    col4.metric("Soil Safety Factor", format_sf(soil_sf))
 
     # ============================================
     # SCENARIO
@@ -319,16 +329,23 @@ if run:
 
     # ============================================
     # CONSTRUCTION RECOMMENDATION
+    # BUG FIX G: use st.error() for UNSAFE — was st.success() (green box) which is misleading
     # ============================================
 
     st.header("Construction Recommendation")
 
     intelligence = generate_engineering_intelligence(result)
 
-    st.success(intelligence["recommendation"])
+    if status == "SAFE":
+        st.success(intelligence["recommendation"])
+    elif status == "WARNING":
+        st.warning(intelligence["recommendation"])
+    else:
+        st.error(intelligence["recommendation"])
 
     # ============================================
     # ENGINEERING DECISION
+    # BUG FIX H: guard against load_reduction being None before * 100
     # ============================================
 
     st.header("Engineering Decision")
@@ -340,6 +357,9 @@ if run:
 
     if status == "SAFE":
         st.write("No engineering action required.")
+
+    elif status == "WARNING":
+        st.warning("⚠️ Design is near structural limit. Engineer review is recommended before proceeding.")
 
     else:
 
@@ -357,21 +377,43 @@ if run:
                 st.write(f"Recommended: Upgrade column capacity to {capacity} kN")
 
             elif option_type == "LOAD_REDUCTION":
-                reduction = option.get("load_reduction") * 100
-                st.write(f"Recommended: Reduce load by {reduction:.1f}%")
+                load_reduction = option.get("load_reduction")
+                if load_reduction is not None:
+                    st.write(f"Recommended: Reduce load by {load_reduction * 100:.1f}%")
+                else:
+                    st.write("Recommended: Reduce structural load.")
+
+            else:
+                st.write("Engineering optimization available.")
 
         else:
             st.write("No engineering action required.")
 
     # ============================================
     # BOQ SECTION
+    # BUG FIX I: use recommended foundation size for BOQ when status is FAIL
     # ============================================
 
     st.header("Bill of Quantities")
 
+    boq_width = foundation_width
+    boq_length = foundation_length
+
+    if status != "SAFE" and decision.get("best_option"):
+        option = decision["best_option"]
+        if option.get("option_type") == "FOUNDATION_INCREASE":
+            rec_size = option.get("foundation_size")
+            if rec_size is not None:
+                boq_width = rec_size
+                boq_length = rec_size
+                st.caption(
+                    f"BOQ calculated using recommended foundation size: "
+                    f"{rec_size} × {rec_size} m (not the input size)."
+                )
+
     boq = generate_boq(
-        foundation_width,
-        foundation_length,
+        boq_width,
+        boq_length,
         total_load,
         soil_capacity
     )

@@ -15,7 +15,7 @@ def run_sensitivity_analysis(
     soil_capacity
 ):
 
-    base_total_load = load_per_storey * number_of_storeys
+    base_total_load = round(load_per_storey * number_of_storeys, 3)
     foundation_area = foundation_width * foundation_length
 
     load_factors = [0.6, 0.8, 1.0, 1.2]

@@ -2,7 +2,9 @@
 # ENGINEERING DECISION ENGINE V8
 # ============================================
 
-def generate_engineering_decision(ranked_options):
+# BUG FIX: added `result` parameter to match how this function is called
+# in triplebot_v5_ui.py: generate_engineering_decision(ranked_options, result)
+def generate_engineering_decision(ranked_options, result=None):
 
     decision = {}
 

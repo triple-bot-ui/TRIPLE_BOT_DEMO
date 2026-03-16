@@ -16,7 +16,9 @@ def run_prebim_validation(
     # TOTAL LOAD
     # ----------------------------------------
 
-    total_load = load_per_storey * number_of_storeys
+    # FIX: round total_load immediately to prevent floating point
+    # artifacts like 299.999 in downstream calculations
+    total_load = round(load_per_storey * number_of_storeys, 3)
 
     # ----------------------------------------
     # FOUNDATION AREA
